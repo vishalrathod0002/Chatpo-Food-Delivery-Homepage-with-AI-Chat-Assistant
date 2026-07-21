@@ -1,0 +1,154 @@
+{
+  "name": "Chatpo",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        -64
+      ],
+      "id": "aeacdd55-0c95-4795-a1b9-5dbfa9f70341",
+      "name": "When chat message received",
+      "webhookId": "f6810b60-425b-4243-8464-f3fa9653766f"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are Chatpo Assistant, the AI support agent for Chatpo food delivery.\n\nYou help with order tracking, cancellations, refunds, and restaurant recommendations by calling Chatpo's HTTP API. Never guess order details — always fetch real data via the connected tools before answering.\n\nRules:\n- Cancel free before restaurant accepts; after that, cancellation may not be possible.\n- Refunds must be requested within 24 hours of delivery.\n- If unsure or a tool call fails, say so and offer to escalate to a human — never make up info.\n- Keep replies short, friendly, and specific to the user's real order.\n- Stay on topic: food, orders, delivery, refunds only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        -64
+      ],
+      "id": "07b5e056-250a-4e9b-9bc1-63c217273a14",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        304,
+        160
+      ],
+      "id": "f2d79126-6f23-42f5-b485-b6abe1ed2007",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Makes an HTTP request and returns the response data {{ $('When chat message received').item.json.chatInput }}",
+        "method": "POST",
+        "url": "https://prod-1-data.ke.pinecone.io/assistant/chat/chatpo",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "pcsk_c3PDQ_9gSHjWnZcUwrP5ASDwLn77wEdaGq35LC5L6kQmYeSVVJZ4KK1QUc6Eg1WRvoWnc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $('When chat message received').item.json.chatInput }}\"\n    }\n  ],\n  \"stream\": false,\n  \"model\": \"gpt-4o\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        432,
+        160
+      ],
+      "id": "a4964a25-0716-4f6f-9c7f-11bb28ac52b4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        160,
+        160
+      ],
+      "id": "cebaa3a0-836d-4522-8309-076defa20aa0",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "s7lokayGqjFMKFLy",
+          "name": "Mistral Cloud account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "10c46cea-ad8b-464d-8eb8-e98303920aa0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ac6c4538a1d35f9bac0b48e3195f738fdfee869591271a67d3bf41cbc4be8fd"
+  },
+  "nodeGroups": [],
+  "id": "Tu2sYbxEL23xULr5",
+  "tags": []
+}
